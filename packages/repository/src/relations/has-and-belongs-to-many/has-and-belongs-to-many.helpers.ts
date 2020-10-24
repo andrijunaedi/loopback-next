@@ -25,18 +25,18 @@ export function resolveHasAndBelongsToManyMetadata(
   if (
     (relationMeta.type as RelationType) !== RelationType.hasAndBelongsToMany
   ) {
-    const reason = 'Relation type must be HasAndBelongsToMany';
+    const reason = 'relation type must be HasAndBelongsToMany';
     throw new InvalidRelationError(reason, relationMeta);
   }
 
   if (!isTypeResolver(relationMeta.target)) {
-    const reason = 'Target must be a type resolver';
+    const reason = 'target must be a type resolver';
     throw new InvalidRelationError(reason, relationMeta);
   }
 
   const sourceModel = relationMeta.source;
   if (!sourceModel || !sourceModel.modelName) {
-    const reason = 'Source model must be defined';
+    const reason = 'source model must be defined';
     throw new InvalidRelationError(reason, relationMeta);
   }
   let keyFrom;
@@ -50,12 +50,12 @@ export function resolveHasAndBelongsToManyMetadata(
   }
 
   if (!relationMeta.through) {
-    const reason = 'Through must be specified';
+    const reason = 'through must be specified';
     throw new InvalidRelationError(reason, relationMeta);
   }
 
   if (!isTypeResolver(relationMeta.through.model)) {
-    const reason = 'Through model must be a type resolver';
+    const reason = 'through model must be a type resolver';
     throw new InvalidRelationError(reason, relationMeta);
   }
 
@@ -92,21 +92,21 @@ export function resolveHasAndBelongsToManyMetadata(
   const sourceFkName =
     relationMeta.through.sourceKey ?? camelCase(sourceModel.modelName + '_id');
   if (!throughModelProperties[sourceFkName]) {
-    const reason = `Through model ${throughModel.name} is missing definition of source foreign key`;
+    const reason = `through model ${throughModel.name} is missing definition of source foreign key`;
     throw new InvalidRelationError(reason, relationMeta);
   }
 
   const targetFkName =
     relationMeta.through.targetKey ?? camelCase(targetModel.modelName + '_id');
   if (!throughModelProperties[targetFkName]) {
-    const reason = `Through model ${throughModel.name} is missing definition of target foreign key`;
+    const reason = `through model ${throughModel.name} is missing definition of target foreign key`;
     throw new InvalidRelationError(reason, relationMeta);
   }
 
   const targetPrimaryKey =
     relationMeta.keyTo ?? targetModel.definition.idProperties()[0];
   if (!targetPrimaryKey || !targetModelProperties[targetPrimaryKey]) {
-    const reason = `Target model ${targetModel.modelName} does not have any primary key (id property)`;
+    const reason = `target model ${targetModel.modelName} does not have any primary key (id property)`;
     throw new InvalidRelationError(reason, relationMeta);
   }
 
