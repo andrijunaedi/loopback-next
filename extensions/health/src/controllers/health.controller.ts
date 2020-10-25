@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {HealthChecker} from '@cloudnative/health';
+import {HealthChecker, HealthStatus, State} from '@cloudnative/health';
 import {BindingScope, Constructor, inject, injectable} from '@loopback/core';
-import {get} from '@loopback/rest';
+import {get, Response, RestBindings} from '@loopback/rest';
 import {HealthBindings} from '../keys';
 import {DEFAULT_HEALTH_OPTIONS, HealthOptions} from '../types';
 
@@ -33,28 +33,57 @@ export function createHealthController(
       responses: {},
       'x-visibility': 'undocumented',
     })
-    health() {
-      return this.healthChecker.getStatus();
+    async health(@inject(RestBindings.Http.RESPONSE) response: Response) {
+      const status = await this.healthChecker.getStatus();
+      return handleStatus(status, response);
     }
 
     @get(options.readyPath, {
       responses: {},
       'x-visibility': 'undocumented',
     })
-    async ready() {
+    async ready(@inject(RestBindings.Http.RESPONSE) response: Response) {
       const status = await this.healthChecker.getReadinessStatus();
-      return status;
+      return handleStatus(status, response);
     }
 
     @get(options.livePath, {
       responses: {},
       'x-visibility': 'undocumented',
     })
-    async live() {
+    async live(@inject(RestBindings.Http.RESPONSE) response: Response) {
       const status = await this.healthChecker.getLivenessStatus();
-      return status;
+      return handleStatus(status, response);
     }
   }
 
   return HealthController;
+}
+
+/**
+ * Create response for the given status
+ * @param status - Health status
+ * @param response - Http response
+ */
+function handleStatus(status: HealthStatus, response: Response) {
+  let statusCode = 200;
+  switch (status.status) {
+    case State.STARTING:
+      statusCode = 503;
+      break;
+    case State.UP:
+      statusCode = 200;
+      break;
+    case State.DOWN:
+      statusCode = 503;
+      break;
+    case State.STOPPING:
+      statusCode = 503;
+      break;
+    case State.STOPPED:
+      statusCode = 503;
+      break;
+  }
+  response.status(statusCode).send(status);
+  return response;
 }
